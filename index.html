@@ -51,21 +51,22 @@
                 document.getElementById('packages').innerHTML = html.join('\n');
             }
             let keydown = null;
+            function update(q) {
+                fetch("https://api-v2v3search-0.nuget.org/autocomplete?prerelease=true&q=" + encodeURIComponent(q))
+                    .then(function(res) {
+                        if (res.ok) {
+                            return res.json();
+                        }
+                    })
+                    .then(function(json) {
+                        render(json.data);
+                    })
+            }
             document.getElementById('keyword').addEventListener("keydown", function(e) {
                 if (keydown) clearTimeout(keydown);
-                keydown = setTimeout(function() {
-                    const q = e.target.value;
-                    fetch("https://api-v2v3search-0.nuget.org/autocomplete?prerelease=true&q=" + encodeURIComponent(e.target.value))
-                        .then(function(res) {
-                            if (res.ok) {
-                                return res.json();
-                            }
-                        })
-                        .then(function(json) {
-                            render(json.data);
-                        })
-                }, 500);
+                keydown = setTimeout(function() { update(e.target.value); }, 500);
             })
+            update('');
         }())
     </script>
 </body>
