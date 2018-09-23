@@ -24,23 +24,38 @@ public static async Task<HttpResponseMessage> Run(HttpRequest req, ILogger log)
 
     if (string.IsNullOrEmpty(id))
         return new HttpResponseMessage(HttpStatusCode.NotFound);
+    
+    log.LogInformation(new EventId(10000, "Package"), id);
 
     var odata = new ODataClient(http);
 
-    var registration = Request.Get($"https://api.nuget.org/v3/registration3/{id.ToLower()}/index.json");
-    var res = await odata.SendAsync(registration);
+    string url = $"https://api.nuget.org/v3/registration3/{id.ToLower()}/index.json";
+    IEnumerable<Entry> entries = null;
+    for (var i = 0; i < 3 && entries == null; i++) {
+        var res = await odata.SendAsync(Request.Get(url));
 
-    if (res.StatusCode == (HttpStatusCode)429)
-        return new HttpResponseMessage((HttpStatusCode)429);
+        if (res.StatusCode == (HttpStatusCode)429)
+            return new HttpResponseMessage((HttpStatusCode)429);
 
-    if (res.StatusCode != HttpStatusCode.OK)
-        return new HttpResponseMessage(HttpStatusCode.NotFound);
+        if (res.StatusCode != HttpStatusCode.OK)
+            return new HttpResponseMessage(HttpStatusCode.NotFound);
 
-    var entries = res.ReadAs<IEnumerable<Entry>>("$..catalogEntry")
-                     .OrderByDescending(e => e.published)
-                     .Take(20)
-                     .ToArray();
-                     
+        var page = res.ReadAs<IEnumerable<string>>("$.items[*]['@id']").LastOrDefault();
+
+        if (page == null)
+            return new HttpResponseMessage(HttpStatusCode.NotFound);
+
+        if (page.StartsWith(url)) {
+            entries = res.ReadAs<IEnumerable<Entry>>("$..catalogEntry")
+                        .OrderByDescending(e => e.published)
+                        .Take(20)
+                        .ToArray();
+        }
+        else {
+            url = page;
+        }
+    }
+
     if (entries.Count() == 0)
         return new HttpResponseMessage(HttpStatusCode.NotFound);
 
