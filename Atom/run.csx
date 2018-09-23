@@ -3,7 +3,6 @@
 #r "Microsoft.Extensions.Configuration.EnvironmentVariables"
 
 using System;
-using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -15,8 +14,6 @@ using Microsoft.Extensions.Primitives;
 using Microsoft.Extensions.Configuration;
 using ODataHttpClient;
 using ODataHttpClient.Models;
-
-File.WriteAllText(@"D:\\home\site\wwwroot\proxies.json",File.ReadAllText(@"D:\\home\site\wwwroot\proxies.json"));
 
 static IConfigurationRoot config = new ConfigurationBuilder().AddEnvironmentVariables().Build();
 static HttpClient http = new HttpClient();
