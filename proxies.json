@@ -3,13 +3,12 @@
     "proxies": {
         "Packages": {
             "matchCondition": {
-                "route": "/packages/{*id}",
-                "methods": [
-                    "GET"
-                ]
+                "route": "/packages/{id}",
+                "methods": ["GET"]
             },
             "backendUri": "https://%WEBSITE_HOSTNAME%/api/Atom",
             "requestOverrides": {
+                "backend.request.method": "get",
                 "backend.request.querystring.id": "{id}"
             }
         }
