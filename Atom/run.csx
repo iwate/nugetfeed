@@ -22,6 +22,9 @@ public static async Task<HttpResponseMessage> Run(HttpRequest req, ILogger log)
 {
     string id = req.Query["id"];
 
+    if (string.IsNullOrEmpty(id))
+        return new HttpResponseMessage(HttpStatusCode.NotFound);
+
     var odata = new ODataClient(http);
 
     var registration = Request.Get($"https://api.nuget.org/v3/registration3/{id.ToLower()}/index.json");
