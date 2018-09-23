@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://iwate.github.io/nugetfeed/">
+    <meta property="og:title" content="NuGet Feed">
+    <meta property="og:description" content="RSS endpoint for nuget.org packages.">
+    <meta name="description" content="RSS endpoint for nuget.org packages.">
+    <meta name="twitter:card" content="summary" />
+    <title>NuGet Feed</title>
+    <link rel="stylesheet" href="./markdown.css">
+    <style>
+        main {
+            max-width: 70rem;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        .markdown pre {
+            background: rgb(253, 246, 227);
+            padding-top: 1em;
+            padding-bottom: 1em;
+        }
+        input {
+            padding: 1em;
+            width: 100%;
+            max-width: 320px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <main class="markdown">
+        <h1>NuGet Feed</h1>
+        <p>RSS endpoint for nuget.org packages.</p>
+        <input id="keyword" placeholder="Please input package id. ex. Newtonsoft.Json" tabindex="0">
+        <ul id="packages"></ul>
+    </main>
+    <script>
+        (function(){
+            function render(data){
+                if (!Array.isArray(data))
+                    return;
+                
+                const html = data.map(function(id) {
+                    return '<li><a target="_blank" rel="noopener noreferrer" href="https://nugetfeed.iwate.me/packages/' + id + '">' + id + '</a></li>';
+                });
+
+                document.getElementById('packages').innerHTML = html.join('\n');
+            }
+            let keydown = null;
+            document.getElementById('keyword').addEventListener("keydown", function(e) {
+                if (keydown) clearTimeout(keydown);
+                keydown = setTimeout(function() {
+                    const q = e.target.value;
+                    fetch("https://api-v2v3search-0.nuget.org/autocomplete?prerelease=true&q=" + encodeURIComponent(e.target.value))
+                        .then(function(res) {
+                            if (res.ok) {
+                                return res.json();
+                            }
+                        })
+                        .then(function(json) {
+                            render(json.data);
+                        })
+                }, 500);
+            })
+        }())
+    </script>
+</body>
+</html>
