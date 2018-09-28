@@ -20,7 +20,7 @@ static HttpClient http = new HttpClient();
 
 public static async Task<HttpResponseMessage> Run(HttpRequest req, ILogger log)
 {
-    string id = req.Query["id"];
+    string id = req.Path.ToString().Replace("/packages/","");
 
     if (string.IsNullOrEmpty(id))
         return new HttpResponseMessage(HttpStatusCode.NotFound);

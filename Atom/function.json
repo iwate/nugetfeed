@@ -1,18 +1,19 @@
 {
-    "bindings": [
-      {
-        "authLevel": "anonymous",
-        "name": "req",
-        "type": "httpTrigger",
-        "direction": "in",
-        "methods": [
-          "get"
-        ]
-      },
-      {
-        "name": "$return",
-        "type": "http",
-        "direction": "out"
-      }
-    ]
-  }
+  "bindings": [
+    {
+      "authLevel": "anonymous",
+      "name": "req",
+      "type": "httpTrigger",
+      "direction": "in",
+      "methods": [
+        "get"
+      ],
+      "route": "packages/{id}"
+    },
+    {
+      "name": "$return",
+      "type": "http",
+      "direction": "out"
+    }
+  ]
+}
