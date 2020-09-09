@@ -29,7 +29,26 @@ public static async Task<HttpResponseMessage> Run(HttpRequest req, ILogger log)
 
     var odata = new ODataClient(http);
 
-    string url = $"https://api.nuget.org/v3/registration3/{id.ToLower()}/index.json";
+    string url = $"https://azuresearch-ussc.nuget.org/query?q={id}";
+    var search = await odata.SendAsync(Request.Get(url));
+
+    if (search.StatusCode == (HttpStatusCode)429)
+            return new HttpResponseMessage((HttpStatusCode)429);
+
+    if (search.StatusCode != HttpStatusCode.OK)
+        return new HttpResponseMessage(HttpStatusCode.NotFound);
+
+    var link = search.ReadAs<string>($"$.data[?(@.id=='{id}')].versions[0]['@id']");
+
+    var top = await odata.SendAsync(Request.Get(link));
+
+    if (top.StatusCode == (HttpStatusCode)429)
+            return new HttpResponseMessage((HttpStatusCode)429);
+
+    if (top.StatusCode != HttpStatusCode.OK)
+        return new HttpResponseMessage(HttpStatusCode.NotFound);
+
+    url = top.ReadAs<string>("$.registration");
     IEnumerable<Entry> entries = Enumerable.Empty<Entry>();
     for (var i = 0; i < 3 && entries.Count() == 0 && url != null; i++) {
         var res = await odata.SendAsync(Request.Get(url));
